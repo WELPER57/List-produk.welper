@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DigitalStore - Jual Produk Digital</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #8a2be2;
+            --primary-dark: #6a1cb9;
+            --secondary: #121212;
+            --accent: #ff00ff;
+            --text: #ffffff;
+            --text-secondary: #cccccc;
+            --card-bg: rgba(26, 26, 36, 0.8);
+            --header-bg: rgba(18, 18, 24, 0.95);
+            --loading-bg: #0a0a14;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+        }
+        
+        body {
+            background: var(--secondary);
+            color: var(--text);
+            overflow-x: hidden;
+            min-height: 100vh;
+            background-image: url('https://img1.pixhost.to/images/8895/643391677_lexzypedia.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+        }
+        
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--loading-bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+        
+        .loader {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .loader-inner {
+            position: absolute;
+            border: 4px solid var(--primary);
+            border-radius: 50%;
+            border-top: 4px solid transparent;
+            width: 100%;
+            height: 100%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .loader-inner:nth-child(2) {
+            border: 4px solid var(--accent);
+            border-top: 4px solid transparent;
+            width: 70%;
+            height: 70%;
+            top: 15%;
+            left: 15%;
+            animation: spinReverse 1.2s linear infinite;
+        }
+        
+        .progress-container {
+            width: 250px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        
+        .loading-text {
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-top: 10px;
+            color: var(--text);
+        }
+        
+        .container {
+            width: 95%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        header {
+            background: var(--header-bg);
+            backdrop-filter: blur(10px);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo img {
+            height: 45px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+        }
+        
+        .logo h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 5px;
+        }
+        
+        nav ul li a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text);
+            font-size: 0.8rem;
+            padding: 10px 15px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        nav ul li a i {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        nav ul li a:hover {
+            background: rgba(138, 43, 226, 0.2);
+            transform: translateY(-3px);
+        }
+        
+        nav ul li a:hover i {
+            color: var(--primary);
+            transform: scale(1.2);
+        }
+        
+        nav ul li a.active {
+            background: rgba(138, 43, 226, 0.3);
+        }
+        
+        nav ul li a.active i {
+            color: var(--primary);
+        }
+        
+        .main-content {
+            padding: 30px 0;
+            min-height: calc(100vh - 160px);
+        }
+        
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .page-title {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 2px;
+        }
+        
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .product-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(138, 43, 226, 0.3);
+            border-color: var(--primary);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .product-info {
+            padding: 20px;
+        }
+        
+        .product-name {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+        
+        .product-description {
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .product-price {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .buy-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+        
+        .buy-btn:hover {
+            background: linear-gradient(90deg, var(--primary-dark), #d100d1);
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .payment-methods {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .payment-method {
+            text-align: center;
+            cursor: pointer;
+            padding: 15px 25px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            background: var(--card-bg);
+            border: 2px solid transparent;
+            width: 160px;
+        }
+        
+        .payment-method:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+        
+        .payment-method.selected {
+            background: rgba(138, 43, 226, 0.2);
+            border-color: var(--primary);
+            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.3);
+        }
+        
+        .payment-method img {
+            height: 40px;
+            margin-bottom: 10px;
+            object-fit: contain;
+        }
+        
+        .payment-method p {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .payment-details {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 16px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .payment-info {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+        
+        .payment-info strong {
+            color: var(--primary);
+        }
+        
+        .claim-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(90deg, #00cc66, #00b359);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .claim-btn:hover {
+            background: linear-gradient(90deg, #00b359, #00994d);
+            box-shadow: 0 0 20px rgba(0, 204, 102, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .note-text {
+            background: rgba(138, 43, 226, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        footer {
+            background: var(--header-bg);
+            padding: 20px 0;
+            text-align: center;
+            margin-top: 50px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes spinReverse {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-360deg); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 5px;
+            }
+            
+            nav ul li a {
+                padding: 8px 12px;
+                font-size: 0.75rem;
+            }
+            
+            nav ul li a i {
+                font-size: 1rem;
+            }
+            
+            .product-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 15px;
+            }
+            
+            .payment-methods {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .payment-method {
+                width: 100%;
+                max-width: 200px;
+            }
+            
+            .logo h1 {
+                font-size: 1.4rem;
+            }
+            
+            .page-title {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading-screen">
+        <div class="loader">
+            <div class="loader-inner"></div>
+            <div class="loader-inner"></div>
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="loading-text" id="loading-text">Memuat 0%</div>
+    </div>
+    
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="https://img1.pixhost.to/images/8895/643391677_lexzypedia.jpg" alt="Logo DIGITAL PRODUK">
+                    <h1>DigitalStore</h1>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="#" data-page="script" class="active"><i class="fas fa-code"></i> Script</a></li>
+                        <li><a href="#" data-page="panel-public"><i class="fas fa-users"></i> Panel Public</a></li>
+                        <li><a href="#" data-page="panel-private"><i class="fas fa-lock"></i> Panel Private</a></li>
+                        <li><a href="#" data-page="hosting"><i class="fas fa-server"></i> Hosting</a></li>
+                        <li><a href="#" data-page="paid-promote"><i class="fas fa-rocket"></i> Paid Promote</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container main-content">
+        <div class="page active" id="script">
+            <h2 class="page-title">Produk Script</h2>
+            <div class="product-grid">
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/5cwm8o.jpg" alt="SC PUSH KONTAK" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">SC PUSH KONTAK</h3>
+                        <p class="product-description">Version: 3 - Script untuk push kontak dengan fitur lengkap</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> No Update: Rp 15.000</p>
+                        <p class="product-price"><i class="fas fa-sync"></i> Free Update: Rp 30.000</p>
+                        <button class="buy-btn" data-product="SC PUSH KONTAK" data-price="15000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/5cwm8o.jpg" alt="SC MD ALL FITUR WORK" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">SC MD ALL FITUR WORK</h3>
+                        <p class="product-description">Version: 2 - Script MD dengan semua fitur bekerja dengan baik</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> No Update: Rp 20.000</p>
+                        <p class="product-price"><i class="fas fa-sync"></i> Free Update: Rp 35.000</p>
+                        <button class="buy-btn" data-product="SC MD ALL FITUR WORK" data-price="20000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/5cwm8o.jpg" alt="SC CPANEL" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">SC CPANEL</h3>
+                        <p class="product-description">Version: 1 - Script untuk mengelola cPanel</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> No Update: Rp 15.000</p>
+                        <button class="buy-btn" data-product="SC CPANEL" data-price="15000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/5cwm8o.jpg" alt="SC SETOR" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">SC SETOR</h3>
+                        <p class="product-description">Version: 3 - Script untuk setor dengan fitur terbaru</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> No Update: Rp 15.000</p>
+                        <p class="product-price"><i class="fas fa-sync"></i> Free Update: Rp 30.000</p>
+                        <button class="buy-btn" data-product="SC SETOR" data-price="15000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/5cwm8o.jpg" alt="SC JPM X SETOR" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">SC JPM X SETOR</h3>
+                        <p class="product-description">Version: 2 - Script JPM X Setor dengan performa tinggi</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> No Update: Rp 20.000</p>
+                        <button class="buy-btn" data-product="SC JPM X SETOR" data-price="20000">Beli Sekarang</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="note-text">
+                <p><strong>NOTE:</strong> SC ALL WORK NO EROR. KALO EROR FREE FIX PASTINYA SC NO ENC DAN SUDAH ADA AUTO FOLOW CH & GRUP</p>
+            </div>
+        </div>
+        
+        <div class="page" id="panel-public">
+            <h2 class="page-title">Panel Public</h2>
+            <div class="product-grid">
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel 1GB" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL 1GB</h3>
+                        <p class="product-description">RAM 1 GB CPU 30% - Cukup untuk SC yang tidak berat</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 1.000</p>
+                        <button class="buy-btn" data-product="PANEL PUBLIC 1GB" data-price="1000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel 2GB" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL 2GB</h3>
+                        <p class="product-description">RAM 2 GB CPU 50% - Cukup untuk SC yang tidak berat</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 2.000</p>
+                        <button class="buy-btn" data-product="PANEL PUBLIC 2GB" data-price="2000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel 3GB" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL 3GB</h3>
+                        <p class="product-description">RAM 3 GB CPU 70% - Cukup untuk SC yang tidak berat</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 3.000</p>
+                        <button class="buy-btn" data-product="PANEL PUBLIC 3GB" data-price="3000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel 4GB" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL 4GB</h3>
+                        <p class="product-description">RAM 4 GB CPU 90% - Sudah enak untuk SC seperti push kontak</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 4.000</p>
+                        <button class="buy-btn" data-product="PANEL PUBLIC 4GB" data-price="4000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel 5GB" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL 5GB</h3>
+                        <p class="product-description">RAM 5 GB CPU 100% - Sudah enak untuk SC agak berat</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 5.000</p>
+                        <button class="buy-btn" data-product="PANEL PUBLIC 5GB" data-price="5000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel 6GB" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL 6GB</h3>
+                        <p class="product-description">RAM 6 GB CPU 120% - Cukup enak untuk SC seperti DM dan lainnya</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 6.000</p>
+                        <button class="buy-btn" data-product="PANEL PUBLIC 6GB" data-price="6000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel 7GB" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL 7GB</h3>
+                        <p class="product-description">RAM 7 GB CPU 140% - Cocok untuk yang pakai SC jaga grup banyak</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 7.000</p>
+                        <button class="buy-btn" data-product="PANEL PUBLIC 7GB" data-price="7000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel 8GB" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL 8GB</h3>
+                        <p class="product-description">RAM 8 GB CPU 160% - Cocok dan tidak ada delay lagi</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 8.000</p>
+                        <button class="buy-btn" data-product="PANEL PUBLIC 8GB" data-price="8000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel 9GB" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL 9GB</h3>
+                        <p class="product-description">RAM 9 GB CPU 180% - Cocok dan tidak ada delay lagi</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 9.000</p>
+                        <button class="buy-btn" data-product="PANEL PUBLIC 9GB" data-price="9000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel 10GB" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL 10GB</h3>
+                        <p class="product-description">RAM 10 GB CPU 200% - Cocok dan tidak ada delay lagi</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 10.000</p>
+                        <button class="buy-btn" data-product="PANEL PUBLIC 10GB" data-price="10000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel Unlimited" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL UNLIMITED</h3>
+                        <p class="product-description">RAM Unlimited CPU Unlimited - Cocok dan tidak ada delay lagi</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 12.000</p>
+                        <button class="buy-btn" data-product="PANEL PUBLIC UNLIMITED" data-price="12000">Beli Sekarang</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="note-text">
+                <p><strong>NOTE:</strong> DARI RAM 7 SAMPAI UNLIMITED ADA GARANSI 15 HARI. KALO MATI FREE GANTI PANEL BARU</p>
+            </div>
+        </div>
+        
+        <div class="page" id="panel-private">
+            <h2 class="page-title">Panel Private</h2>
+            <div class="product-grid">
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel 1GB" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL 1GB</h3>
+                        <p class="product-description">RAM 1 GB CPU 30% - Cukup untuk SC yang tidak berat</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 2.000</p>
+                        <button class="buy-btn" data-product="PANEL PRIVATE 1GB" data-price="2000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel 2GB" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL 2GB</h3>
+                        <p class="product-description">RAM 2 GB CPU 50% - Cukup untuk SC yang tidak berat</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 3.000</p>
+                        <button class="buy-btn" data-product="PANEL PRIVATE 2GB" data-price="3000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel 3GB" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL 3GB</h3>
+                        <p class="product-description">RAM 3 GB CPU 70% - Cukup untuk SC yang tidak berat</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 4.000</p>
+                        <button class="buy-btn" data-product="PANEL PRIVATE 3GB" data-price="4000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel 4GB" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL 4GB</h3>
+                        <p class="product-description">RAM 4 GB CPU 90% - Sudah enak untuk SC seperti push kontak</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 5.000</p>
+                        <button class="buy-btn" data-product="PANEL PRIVATE 4GB" data-price="5000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel 5GB" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL 5GB</h3>
+                        <p class="product-description">RAM 5 GB CPU 100% - Sudah enak untuk SC agak berat</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 6.000</p>
+                        <button class="buy-btn" data-product="PANEL PRIVATE 5GB" data-price="6000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel 6GB" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL 6GB</h3>
+                        <p class="product-description">RAM 6 GB CPU 120% - Cukup enak untuk SC seperti DM dan lainnya</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 7.000</p>
+                        <button class="buy-btn" data-product="PANEL PRIVATE 6GB" data-price="7000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel 7GB" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL 7GB</h3>
+                        <p class="product-description">RAM 7 GB CPU 140% - Cocok untuk yang pakai SC jaga grup banyak</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 8.000</p>
+                        <button class="buy-btn" data-product="PANEL PRIVATE 7GB" data-price="8000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel 8GB" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL 8GB</h3>
+                        <p class="product-description">RAM 8 GB CPU 160% - Cocok dan tidak ada delay lagi</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 9.000</p>
+                        <button class="buy-btn" data-product="PANEL PRIVATE 8GB" data-price="9000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel 9GB" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL 9GB</h3>
+                        <p class="product-description">RAM 9 GB CPU 180% - Cocok dan tidak ada delay lagi</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 10.000</p>
+                        <button class="buy-btn" data-product="PANEL PRIVATE 9GB" data-price="10000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel 10GB" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL 10GB</h3>
+                        <p class="product-description">RAM 10 GB CPU 200% - Cocok dan tidak ada delay lagi</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 11.000</p>
+                        <button class="buy-btn" data-product="PANEL PRIVATE 10GB" data-price="11000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/9ljwuw.jpg" alt="Panel Unlimited" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">PANEL UNLIMITED</h3>
+                        <p class="product-description">RAM Unlimited CPU Unlimited - Cocok dan tidak ada delay lagi</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 15.000</p>
+                        <button class="buy-btn" data-product="PANEL PRIVATE UNLIMITED" data-price="15000">Beli Sekarang</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="note-text">
+                <p><strong>NOTE:</strong> DARI RAM 7 SAMPAI UNLIMITED ADA GARANSI 15 HARI KALO MATI FREE GANTI PANEL BARU DAN KNP YG PRIVATE LEBIH MAHAL KARENA KE AMANAN NYA LEBIH TINGGI GAK AKAN ADA YG CURI SC KALIAN DAN SERVER JARANG DOWN PEMBELIAN FULL 1 BULAN</p>
+            </div>
+        </div>
+        
+        <div class="page" id="hosting">
+            <h2 class="page-title">Produk Hosting</h2>
+            <div class="product-grid">
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/0xiyvi.jpg" alt="Admin Panel" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">ADMIN PANEL</h3>
+                        <p class="product-description">Benefit yang didapat: Dapat SC CPANEL, bisa open seller panel sendiri, dan bisa open PT seller biar bisa open seller di grup lu</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 20.000</p>
+                        <button class="buy-btn" data-product="ADMIN PANEL" data-price="20000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/0xiyvi.jpg" alt="Seller Panel Public" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">SELLER PANEL PUBLIC</h3>
+                        <p class="product-description">Server cukup aman dan kapasitas server RAM 16 CPU 8 dengan kapasitas segitu sudah paling maxx</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 10.000</p>
+                        <button class="buy-btn" data-product="SELLER PANEL PUBLIC" data-price="10000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/0xiyvi.jpg" alt="Seller Panel Private" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">SELLER PANEL PRIVATE</h3>
+                        <p class="product-description">Server 99% aman dan gak akan ada yang curi SC kalian dan dengan kapasitas RAM 16 C 8 itu sudah paling maxx dan admin panel cuma Welper saja</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 15.000</p>
+                        <button class="buy-btn" data-product="SELLER PANEL PRIVATE" data-price="15000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/0xiyvi.jpg" alt="VPS R2 C2" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">VPS R2 C2</h3>
+                        <p class="product-description">Benefit VPS: High Quality, awet & stabil, Free Install Panel Pterodactyl, Free Tema, Free Request Domain Panel, Free Request Region, OS & Versi, Free Egg Bot SAMP & Bot WhatsApp terbaru, Full akses VPS, Masa aktif 25-30 hari</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 20.000</p>
+                        <button class="buy-btn" data-product="VPS R2 C2" data-price="20000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/0xiyvi.jpg" alt="VPS R3 C2" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">VPS R3 C2</h3>
+                        <p class="product-description">Benefit VPS: High Quality, awet & stabil, Free Install Panel Pterodactyl, Free Tema, Free Request Domain Panel, Free Request Region, OS & Versi, Free Egg Bot SAMP & Bot WhatsApp terbaru, Full akses VPS, Masa aktif 25-30 hari</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 30.000</p>
+                        <button class="buy-btn" data-product="VPS R3 C2" data-price="30000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/0xiyvi.jpg" alt="VPS R8 C4" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">VPS R8 C4</h3>
+                        <p class="product-description">Benefit VPS: High Quality, awet & stabil, Free Install Panel Pterodactyl, Free Tema, Free Request Domain Panel, Free Request Region, OS & Versi, Free Egg Bot SAMP & Bot WhatsApp terbaru, Full akses VPS, Masa aktif 25-30 hari</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 40.000</p>
+                        <button class="buy-btn" data-product="VPS R8 C4" data-price="40000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/0xiyvi.jpg" alt="VPS R16 C4" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">VPS R16 C4</h3>
+                        <p class="product-description">Benefit VPS: High Quality, awet & stabil, Free Install Panel Pterodactyl, Free Tema, Free Request Domain Panel, Free Request Region, OS & Versi, Free Egg Bot SAMP & Bot WhatsApp terbaru, Full akses VPS, Masa aktif 25-30 hari</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 50.000</p>
+                        <button class="buy-btn" data-product="VPS R16 C4" data-price="50000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/0xiyvi.jpg" alt="VPS R16 C8" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">VPS R16 C8</h3>
+                        <p class="product-description">Benefit VPS: High Quality, awet & stabil, Free Install Panel Pterodactyl, Free Tema, Free Request Domain Panel, Free Request Region, OS & Versi, Free Egg Bot SAMP & Bot WhatsApp terbaru, Full akses VPS, Masa aktif 25-30 hari</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 60.000</p>
+                        <button class="buy-btn" data-product="VPS R16 C8" data-price="60000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <img src="https://files.catbox.moe/0xiyvi.jpg" alt="VPS R32 C8" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">VPS R32 C8 LIMITED EDITION</h3>
+                        <p class="product-description">Benefit VPS: High Quality, awet & stabil, Free Install Panel Pterodactyl, Free Tema, Free Request Domain Panel, Free Request Region, OS & Versi, Free Egg Bot SAMP & Bot WhatsApp terbaru, Full akses VPS, Masa aktif 25-30 hari</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Rp 80.000</p>
+                        <button class="buy-btn" data-product="VPS R32 C8 LIMITED EDITION" data-price="80000">Beli Sekarang</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="page" id="paid-promote">
+            <h2 class="page-title">Layanan Paid Promote</h2>
+            <div class="product-grid">
+                <div class="product-card">
+                    <div class="product-info">
+                        <h3 class="product-name">PP SALURAN</h3>
+                        <p class="product-description">PP gak di suntik dan 100% hasil dari YouTube</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> 100CH: Rp 30.000</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> 200CH: Rp 45.000</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> 300CH: Rp 60.000</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> 400CH: Rp 70.000</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> 500CH: Rp 90.000</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> 1K CH: Rp 180.000 (PROMO)</p>
+                        <button class="buy-btn" data-product="PP SALURAN" data-price="30000">Beli Sekarang</button>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <div class="product-info">
+                        <h3 class="product-name">PP GRUP</h3>
+                        <p class="product-description">All member murni no suntik</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> 50 Member: Rp 20.000</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> 100 Member: Rp 40.000</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> 150 Member: Rp 60.000</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> 200 Member: Rp 80.000</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> 250 Member: Rp 100.000</p>
+                        <p class="product-price"><i class="fas fa-tag"></i> Full Slot GB: Rp 300.000 (PROMO)</p>
+                        <button class="buy-btn" data-product="PP GRUP" data-price="20000">Beli Sekarang</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="page" id="payment">
+            <h2 class="page-title">Pembayaran</h2>
+            <div class="payment-info">
+                <p>Produk: <strong id="selected-product">-</strong></p>
+                <p>Harga: <strong id="selected-price">-</strong></p>
+            </div>
+            
+            <h3 style="text-align: center; margin: 20px 0; color: var(--text);">Pilih Metode Pembayaran:</h3>
+            <div class="payment-methods">
+                <div class="payment-method" data-method="dana">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Logo_dana_blue.svg/320px-Logo_dana_blue.svg.png" alt="DANA">
+                    <p>DANA</p>
+                </div>
+                
+                <div class="payment-method" data-method="gopay">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Gopay_logo.svg/320px-Gopay_logo.svg.png" alt="GoPay">
+                    <p>GoPay</p>
+                </div>
+            </div>
+            
+            <div class="payment-details">
+                <h3 style="margin-bottom: 15px; color: var(--primary);">Instruksi Pembayaran:</h3>
+                <p>1. Pilih metode pembayaran di atas</p>
+                <p>2. Transfer sesuai dengan harga produk</p>
+                <p>3. Setelah transfer, klik tombol "Claim Produk" di bawah</p>
+                <p>4. Anda akan diarahkan ke WhatsApp untuk konfirmasi</p>
+                
+                <div id="payment-instruction" style="margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 10px;">
+                    <p>Silakan pilih metode pembayaran terlebih dahulu</p>
+                </div>
+            </div>
+            
+            <button class="claim-btn" id="claim-btn"><i class="fas fa-check-circle"></i> Claim Produk</button>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>&copy;SELAMAT DATANG DI WEB LIST PRODUK WELPER KALO MAU NEGO BISA KE NOMOR: 083849544906</p>
+        </div>
+    </footer>
+
+    <script>
+        // Data pembayaran
+        const paymentData = {
+            dana: {
+                number: "083838681020",
+                name: "DigitalStore Admin"
+            },
+            gopay: {
+                number: "083838681020",
+                name: "DigitalStore Admin"
+            }
+        };
+        
+        // Data admin WhatsApp
+        const adminWhatsApp = "6283849544906";
+        
+        // Simulasi loading
+        document.addEventListener('DOMContentLoaded', function() {
+            let progress = 0;
+            const progressBar = document.getElementById('progress-bar');
+            const loadingText = document.getElementById('loading-text');
+            const loadingScreen = document.getElementById('loading-screen');
+            
+            const loadingInterval = setInterval(() => {
+                progress += Math.floor(Math.random() * 10) + 1;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(loadingInterval);
+                    
+                    loadingText.textContent = `Memuat ${progress}%`;
+                    progressBar.style.width = `${progress}%`;
+                    
+                    setTimeout(() => {
+                        loadingScreen.style.opacity = '0';
+                        setTimeout(() => {
+                            loadingScreen.style.display = 'none';
+                        }, 500);
+                    }, 500);
+                } else {
+                    loadingText.textContent = `Memuat ${progress}%`;
+                    progressBar.style.width = `${progress}%`;
+                }
+            }, 100);
+        });
+        
+        // Fungsi untuk mengganti halaman
+        function showPage(pageId) {
+            // Sembunyikan semua halaman
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Tampilkan halaman yang dipilih
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update navigasi
+            document.querySelectorAll('nav a').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('data-page') === pageId) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        // Navigasi menu
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const pageId = this.getAttribute('data-page');
+                showPage(pageId);
+                window.scrollTo(0, 0);
+            });
+        });
+        
+        // Tombol beli
+        document.querySelectorAll('.buy-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const productName = this.getAttribute('data-product');
+                const productPrice = this.getAttribute('data-price');
+                
+                // Simpan data produk yang dipilih
+                localStorage.setItem('selectedProduct', productName);
+                localStorage.setItem('selectedPrice', productPrice);
+                
+                // Update informasi pembayaran
+                document.getElementById('selected-product').textContent = productName;
+                document.getElementById('selected-price').textContent = `Rp ${parseInt(productPrice).toLocaleString('id-ID')}`;
+                
+                // Tampilkan halaman pembayaran
+                showPage('payment');
+                
+                // Reset pilihan pembayaran
+                document.querySelectorAll('.payment-method').forEach(method => {
+                    method.classList.remove('selected');
+                });
+                document.getElementById('payment-instruction').innerHTML = '<p>Silakan pilih metode pembayaran terlebih dahulu</p>';
+                
+                window.scrollTo(0, 0);
+            });
+        });
+        
+        // Pilih metode pembayaran
+        document.querySelectorAll('.payment-method').forEach(method => {
+            method.addEventListener('click', function() {
+                // Hapus seleksi sebelumnya
+                document.querySelectorAll('.payment-method').forEach(m => {
+                    m.classList.remove('selected');
+                });
+                
+                // Tandai yang dipilih
+                this.classList.add('selected');
+                
+                // Tampilkan instruksi pembayaran
+                const methodType = this.getAttribute('data-method');
+                const payment = paymentData[methodType];
+                
+                document.getElementById('payment-instruction').innerHTML = `
+                    <p style="color: var(--primary); font-weight: bold;">Silakan transfer ke ${methodType.toUpperCase()}:</p>
+                    <p><strong>Nomor: ${payment.number}</strong></p>
+                    <p><strong>Atas Nama: ${payment.name}</strong></p>
+                    <p style="margin-top: 10px;">Setelah transfer, jangan lupa screenshot buktinya untuk dikirim ke admin.</p>
+                `;
+                
+                // Simpan metode pembayaran yang dipilih
+                localStorage.setItem('selectedPayment', methodType);
+            });
+        });
+        
+        // Tombol claim produk
+        document.getElementById('claim-btn').addEventListener('click', function() {
+            const selectedProduct = localStorage.getItem('selectedProduct');
+            const selectedPrice = localStorage.getItem('selectedPrice');
+            const selectedPayment = localStorage.getItem('selectedPayment');
+            
+            if (!selectedPayment) {
+                alert('Silakan pilih metode pembayaran terlebih dahulu!');
+                return;
+            }
+            
+            const payment = paymentData[selectedPayment];
+            
+            // Format pesan WhatsApp dengan teks otomatis
+            const message = `Halo admin, saya sudah membayar produk ${selectedProduct} sebesar Rp ${parseInt(selectedPrice).toLocaleString('id-ID')} via ${selectedPayment.toUpperCase()} ke ${payment.number}. Berikut bukti transfernya:`;
+            
+            // Redirect ke WhatsApp dengan pesan otomatis
+            window.open(`https://wa.me/${adminWhatsApp}?text=${encodeURIComponent(message)}`, '_blank');
+        });
+    </script>
+</body>
+</html>
